@@ -7,34 +7,42 @@ description: Architecture standards and best practices for native SwiftUI projec
 
 This skill defines architectural standards and best practices for native SwiftUI projects. Adherence to these rules ensures consistency, maintainability, and optimal performance across the application.
 
-## 🏗 Directory Structure
+## 🏗 Directory Structure & Clean Architecture
 
-Projects follow a strictly modular structure to separate concerns:
+Projects follow a strictly modular structure to separate concerns and adhere to **Clean Architecture** principles:
 
 - **`Views/`**: Contains all native SwiftUI views.
     - Subdivide by feature or domain (e.g., `DashboardViews/`, `ProfileViews/`).
     - Keep views small and focused.
 - **`Models/`**: Data definitions.
-    - **Persistence**: SwiftData entities (e.g., `JobEntity`).
-    - **DTOs**: API models and transfer objects (e.g., `TwitchVideo`).
+    - **`UI/`**: Models specifically tailored for view representation. These models should only contain what the UI needs.
+    - **`Data/`**: Models representing core business entities, DTOs, or database entities (Back models).
+    - **Separation**: Always maintain a clear distinction between models in these two folders. Map between them as needed.
 - **`Core/`**: The "Brain" of the application.
     - Logic for API clients, authentication managers, WebSockets, and services.
     - No UI code allowed here.
 - **`Extensions/`**: Reusable SwiftUI styles and type enhancements.
-    - Standardize common UI patterns (e.g., `CardModifier`).
 
-## ⚡️ Views & Performance
+## ⚡️ Type Selection & Performance
 
+- **Prioritize Value Types**: Follow this hierarchy when choosing a type:
+    1. **`enum`**: Use for almost everything (state, logic, configurations). If a task can be done with an enum, do it with an enum.
+    2. **`struct`**: Use when you need to store data that doesn't fit well into enum associated values or when you need unique data structures.
+    3. **`class`**: Use ONLY as a last resort when reference semantics are strictly required (e.g., specific lifecycle needs or shared mutable state that cannot be handled by an actor).
+- **`actor`**: Use actors when it is the most optimized way to handle shared mutable state and concurrency (e.g., secure storage, session management).
+- **Nested Enums**: Do not hesitate to define `enum` types within Views or Structs for local state (e.g., `enum Status`, `enum ViewState`, `enum Style`) that only makes sense in that specific context.
 - **Simple Views**: Keep views as simple as possible. Prefer simple data structures (Plain Old Data / POD) over complex structs to reduce compilation times and improve performance.
 - **Minimal Data**: Pass only the minimum required data to a View to avoid unnecessary diffing and re-renders.
-- **Simple Body**: Keep the `body` property clean. Avoid large closures; instead, pass functions to modifiers (e.g., `.onChange(of: foo, perform: handleFooChange)`).
 
 ## 🎨 Design & Resources
 
+- **Styling Abstraction**: Abstract all colors and fonts using extensions to ensure a type-safe and semantic design system.
+    - **Color Extensions**: Extend `Color` with static properties for all brand and semantic colors (e.g., `static let brandPrimary = Color("brandPrimary")`).
+    - **Font Extensions**: Extend `Font` with static properties or functions for the app's typography scale (e.g., `static let titleLarge = Font.system(size: 24, weight: .bold)`).
+    - **Usage**: Always use these extensions in Views (e.g., `.foregroundColor(.brandPrimary)`) instead of string literals or raw system calls.
 - **Resource Management**: ALL colors, images, and icons MUST be declared and managed within `.xcassets` catalogs. No hardcoded hex colors in code.
 - **Branding**: Use the system `AccentColor` defined in `Assets.xcassets` as the primary brand color.
-- **Dark Mode**: Always ensure assets and colors in `.xcassets` have appropriate variants for Light and Dark modes.
-- **Native First**: Prioritize native SwiftUI components (e.g., `List`, `NavigationStack`, `Label`) over custom-built alternatives unless specific requirements dictate otherwise.
+- **Native First**: Prioritize native SwiftUI components over custom-built alternatives.
 
 ## 💾 Data & State Management
 
