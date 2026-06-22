@@ -13,7 +13,11 @@ Projects follow a strictly modular structure to separate concerns and adhere to 
 
 - **`Views/`**: Contains all native SwiftUI views.
     - Subdivide by feature or domain (e.g., `DashboardViews/`, `ProfileViews/`).
-    - Keep views small and focused.
+    - Keep views small and focused. Always decompose a view into the smallest possible subviews.
+    - **Subview Folders**: Whenever a view needs to be split into subviews, create a dedicated subfolder for it: `Views/MyNewView/MyNewView.swift`. Place that view AND all of its associated subviews inside this folder.
+        - **Exception**: Top-level navigation views (e.g., the main `TabView`) may remain directly in `Views/` without their own folder.
+    - **Check Before Creating**: Before creating any new view, verify that a similar one does not already exist. If it does, always try to factorize as much as possible.
+        - **Factored Components**: When a view is successfully factored into something reusable, give it an abstract, generic name and place it in `Views/Components/`.
 - **`Models/`**: Data definitions.
     - **`UI/`**: Models specifically tailored for view representation. These models should only contain what the UI needs.
     - **`Data/`**: Models representing core business entities, DTOs, or database entities (Back models).
